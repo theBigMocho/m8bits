@@ -1,0 +1,61 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Skill(commit-and-push)",
+      "Bash(test:*)",
+      "Bash(python:*)",
+      "Bash(del:*)",
+      "Bash(pytest:*)",
+      "WebFetch(domain:sb-ep.sennapay.cl)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"=== {} ===\"\" && grep -n \"\"display:\"\" {}')",
+      "Bash(docker compose:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/logs_system/hooks/log-prompt.py"
+          },
+          {
+            "type": "command",
+            "command": "python .claude/logs_system/hooks/log-chat-history.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/logs_system/hooks/log-chat-history.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/logs_system/hooks/save-images.py"
+          },
+          {
+            "type": "command",
+            "command": "python .claude/logs_system/hooks/log-chat-history.py"
+          }
+        ]
+      }
+    ]
+  }
+}

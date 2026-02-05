@@ -1,0 +1,12 @@
+# Logs y archivos temporales
+templates/.claude/logs_system/logs/*
+templates/.claude/logs_system/data/*
+templates/.claude/logs_system/images/*
+templates/.claude/logs_system/chat_viewer/images/*
+templates/.claude/logs_system/chat_viewer/chat.html
+
+# Mantener carpetas vacias con .gitkeep
+!templates/.claude/logs_system/logs/.gitkeep
+!templates/.claude/logs_system/data/.gitkeep
+!templates/.claude/logs_system/images/.gitkeep
+!templates/.claude/logs_system/chat_viewer/images/.gitkeep

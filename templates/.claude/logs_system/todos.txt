@@ -1,0 +1,2 @@
+- que al pegar una foto en consola, quede referencia de la foto pegada en el chat
+- crear una mini app en Python, que genere a partir de los archivos de chat con un rango y fecha, genera una carpeta con un HTML y un md  carpeta de imágenes  y genere un historia fácil de mirar.
