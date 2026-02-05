@@ -1,8 +1,92 @@
 # m8bits - Modulo PowerShell para Claude Code
 
 [![GitHub](https://img.shields.io/badge/GitHub-theBigMocho%2Fm8bits-blue)](https://github.com/theBigMocho/m8bits)
+[![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue)](https://github.com/PowerShell/PowerShell)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 Utilidades para inicializar y gestionar proyectos con Claude Code.
+
+---
+
+## Resumen
+
+### Problema que resuelve
+
+Al trabajar con [Claude Code](https://claude.com/claude-code) (CLI de Anthropic), cada proyecto necesita una carpeta `.claude/` con configuracion personalizada: comandos, hooks, sistema de logs, etc. Copiar manualmente esta configuracion a cada nuevo proyecto es tedioso y propenso a errores.
+
+### Solucion
+
+`m8bits` es un modulo de PowerShell que automatiza la inicializacion de proyectos con Claude Code. Con un solo comando (`m8bits init`), copia una plantilla predefinida de configuracion al directorio actual.
+
+### Flujo de trabajo
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ANTES (manual)                                             │
+│  ─────────────────────────────────────────────────────────  │
+│  1. Ir a carpeta de templates                               │
+│  2. Copiar .claude/                                         │
+│  3. Pegar en proyecto nuevo                                 │
+│  4. Abrir Claude Code                                       │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  AHORA (con m8bits)                                         │
+│  ─────────────────────────────────────────────────────────  │
+│  1. cd mi-proyecto                                          │
+│  2. m8bits init                                             │
+│  3. claude                                                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Que incluye la plantilla
+
+| Carpeta/Archivo | Proposito |
+|-----------------|-----------|
+| `.claude/commands/` | Comandos personalizados (commit-and-push, increment-version, etc.) |
+| `.claude/logs_system/` | Sistema de logging con hooks para guardar historial de chats |
+| `.claude/logs_system/hooks/` | Scripts Python que se ejecutan en eventos de Claude |
+| `.claude/settings.local.json` | Configuracion local del proyecto |
+| `CLAUDE.md` | Instrucciones especificas del proyecto para Claude |
+
+### Estructura del modulo
+
+```
+m8bits/
+├── .gitignore              # Excluye logs y archivos temporales
+├── LICENSE                 # Licencia MIT
+├── README.md               # Esta documentacion
+├── m8bits.psd1             # Manifiesto del modulo (metadata, exports)
+├── m8bits.psm1             # Codigo del modulo (funciones)
+└── templates/              # Plantillas incluidas en el modulo
+    ├── CLAUDE.md           # Template de instrucciones para Claude
+    └── .claude/
+        ├── commands/       # Comandos personalizados
+        │   ├── actualizar-desde-sandbox.md
+        │   ├── commit-and-push.md
+        │   ├── increment-version.md
+        │   └── integrar-desde-sandbox.md
+        ├── logs_system/    # Sistema de logging
+        │   ├── hooks/      # Scripts que se ejecutan en eventos
+        │   │   ├── log-chat-history.py
+        │   │   ├── log-prompt.py
+        │   │   └── save-images.py
+        │   ├── docs/
+        │   ├── data/
+        │   ├── logs/
+        │   └── chat_viewer/
+        └── settings.local.json
+```
+
+### Tecnologias utilizadas
+
+| Tecnologia | Uso |
+|------------|-----|
+| PowerShell 7 | Lenguaje del modulo |
+| Git/GitHub | Control de versiones y distribucion |
+| SSH | Autenticacion con GitHub |
+
+[Volver al indice](#indice)
 
 ---
 
@@ -185,14 +269,15 @@ Switch detecta subcomando 'init'
 Ejecuta Initialize-ClaudeProject
          │
          ▼
-Copy-Item copia archivos de .claude_clean
+Copy-Item copia archivos de templates/
 ```
 
 ### Estructura del codigo
 
 ```powershell
-# Variable de script (privada al modulo)
-$script:ClaudeCleanPath = "C:\_dev\.claude_proyect\.claude_clean"
+# Variable de script - ruta RELATIVA al modulo usando $PSScriptRoot
+# Esto permite que el modulo sea portable y distribuible
+$script:ClaudeCleanPath = Join-Path $PSScriptRoot "templates"
 
 # Funcion principal con subcomandos
 function Invoke-M8bits {
@@ -206,7 +291,7 @@ function Invoke-M8bits {
 # Funcion que hace el trabajo real
 function Initialize-ClaudeProject {
     # 1. Verifica si ya existe .claude
-    # 2. Verifica que existe la fuente
+    # 2. Verifica que existe la fuente (templates/)
     # 3. Copia archivos con Copy-Item
 }
 
@@ -216,6 +301,8 @@ Set-Alias -Name m8bits -Value Invoke-M8bits
 # Exporta funciones y alias para que sean visibles
 Export-ModuleMember -Function ... -Alias m8bits
 ```
+
+**Nota sobre `$PSScriptRoot`**: Esta variable automatica de PowerShell contiene la ruta del directorio donde esta el script actual. Usarla en lugar de rutas hardcodeadas hace que el modulo sea portable.
 
 ### Por que usar un alias
 
@@ -395,35 +482,34 @@ Register-PSRepository -Name "MiEmpresa" -SourceLocation "https://nuget.miempresa
 Install-Module -Name m8bits -Repository "MiEmpresa"
 ```
 
-### Consideraciones para distribuir m8bits
+### Como se resolvio la distribucion
 
-Este modulo tiene una **dependencia de ruta hardcodeada**:
+Este modulo incluye los templates dentro del propio repositorio, usando rutas relativas:
 
 ```powershell
-$script:ClaudeCleanPath = "C:\_dev\.claude_proyect\.claude_clean"
+# Ruta relativa al modulo (portable)
+$script:ClaudeCleanPath = Join-Path $PSScriptRoot "templates"
 ```
 
-Para distribuirlo, considera:
-
-1. **Hacer la ruta configurable** via variable de entorno:
-```powershell
-$script:ClaudeCleanPath = $env:M8BITS_TEMPLATE_PATH ?? "C:\_dev\.claude_proyect\.claude_clean"
-```
-
-2. **Incluir los templates** dentro del modulo:
+**Estructura distribuible:**
 ```
 m8bits/
 ├── m8bits.psm1
 ├── m8bits.psd1
 ├── README.md
-└── templates/
+└── templates/          # Templates incluidos
+    ├── CLAUDE.md
     └── .claude/
         ├── commands/
         ├── logs_system/
         └── settings.local.json
 ```
 
-3. **Documentar el requisito** para que el usuario cree su propia carpeta de templates.
+**Ventajas de este enfoque:**
+- El modulo es autocontenido (no depende de rutas externas)
+- Cualquier usuario puede instalarlo con `git clone`
+- Los templates se versionan junto con el modulo
+- Actualizaciones del modulo incluyen actualizaciones de templates
 
 [Volver al indice](#indice)
 
