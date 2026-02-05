@@ -1,5 +1,7 @@
 # m8bits - Modulo PowerShell para Claude Code
 
+[![GitHub](https://img.shields.io/badge/GitHub-theBigMocho%2Fm8bits-blue)](https://github.com/theBigMocho/m8bits)
+
 Utilidades para inicializar y gestionar proyectos con Claude Code.
 
 ---
@@ -89,11 +91,22 @@ Esto funciona porque:
 
 ## Instalacion
 
-El modulo ya esta instalado en:
+### Desde GitHub (recomendado)
+
+```powershell
+# Clonar directamente a la carpeta de modulos
+git clone https://github.com/theBigMocho/m8bits.git "$HOME\Documents\PowerShell\Modules\m8bits"
+```
+
+### Instalacion local
+
+Si ya tienes el modulo instalado localmente, esta en:
 
 ```
-C:\Users\crist\OneDrive\Documentos\PowerShell\Modules\m8bits\
+~\Documents\PowerShell\Modules\m8bits\
 ```
+
+### Verificar instalacion
 
 Para verificar que esta disponible:
 
@@ -313,11 +326,11 @@ m8bits/
 
 ### 2. Repositorio Git (GitHub, GitLab, etc.)
 
-Subir el modulo a un repositorio. Los usuarios lo clonan directamente:
+Este modulo esta disponible en GitHub. Los usuarios lo clonan directamente:
 
 ```powershell
 # Clonar a la carpeta de modulos
-git clone https://github.com/usuario/m8bits.git "$HOME\Documents\PowerShell\Modules\m8bits"
+git clone https://github.com/theBigMocho/m8bits.git "$HOME\Documents\PowerShell\Modules\m8bits"
 ```
 
 **Ventajas:**
