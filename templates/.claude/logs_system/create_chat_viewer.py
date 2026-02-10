@@ -8,8 +8,8 @@ from datetime import datetime, timedelta, timezone
 def create_chat_viewer():
     # Define paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    source_images_path = r"C:\parse\proyectos\apps\promet\.claude\logs_system\images"
-    images_index_path = r"C:\parse\proyectos\apps\promet\.claude\logs_system\data\.images_index.json"
+    source_images_path = os.path.join(script_dir, "images")
+    images_index_path = os.path.join(script_dir, "data", ".images_index.json")
     dest_images_path = os.path.join(script_dir, "chat_viewer", "images")
 
     # Create necessary directories
