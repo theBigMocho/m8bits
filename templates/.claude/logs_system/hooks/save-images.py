@@ -113,7 +113,10 @@ def extract_images_from_transcript(transcript_path):
                                         "timestamp": timestamp,
                                         "role": role,
                                         "media_type": media_type,
-                                        "size_bytes": os.path.getsize(filepath)
+                                        "size_bytes": os.path.getsize(filepath),
+                                        "source": "transcript",
+                                        "read_by_claude": False,
+                                        "read_timestamp": None
                                     }
 
                                     # Evitar duplicados (comparar por timestamp reciente)

@@ -1,20 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(tree:*)",
-      "Skill(commit-and-push)",
-      "Bash(test:*)",
-      "Bash(python:*)",
-      "Bash(del:*)",
-      "Bash(pytest:*)",
-      "WebFetch(domain:sb-ep.sennapay.cl)",
-      "Bash(curl:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
-      "Bash(find:*)",
-      "Bash(xargs -I {} sh -c 'echo \"\"=== {} ===\"\" && grep -n \"\"display:\"\" {}')",
-      "Bash(docker compose:*)"
-    ],
+    "allow": [],
     "deny": [],
     "ask": []
   },
@@ -22,6 +8,10 @@
     "UserPromptSubmit": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/logs_system/hooks/capture-wsl-clipboard.py"
+          },
           {
             "type": "command",
             "command": "python .claude/logs_system/hooks/log-prompt.py"
