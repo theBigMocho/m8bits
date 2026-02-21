@@ -3,6 +3,7 @@ import json
 import sys
 import os
 import io
+import time
 from datetime import datetime
 
 def get_log_dir():
@@ -174,37 +175,57 @@ ASSISTANT:
                 df.write(f"exists: {os.path.exists(transcript_path) if transcript_path else 'N/A'}\n")
 
             if transcript_path and os.path.exists(transcript_path):
-                try:
-                    # Leer el archivo JSONL (cada línea es un mensaje JSON)
-                    messages = []
-                    with open(transcript_path, "r", encoding="utf-8") as f:
-                        for line in f:
-                            if line.strip():
-                                messages.append(json.loads(line))
+                max_retries = 5
+                retry_delay = 0.3  # segundos entre intentos
+                attempt = 0
+                while attempt < max_retries:
+                    try:
+                        # Leer el archivo JSONL (cada linea es un mensaje JSON)
+                        messages = []
+                        with open(transcript_path, "r", encoding="utf-8") as f:
+                            for line in f:
+                                if line.strip():
+                                    messages.append(json.loads(line))
 
-                    # Buscar la última respuesta del asistente
-                    for msg in reversed(messages):
-                        # La estructura es msg["message"]["role"] y msg["message"]["content"]
-                        message_obj = msg.get("message", {})
-                        if message_obj.get("role") == "assistant":
-                            # Extraer el contenido de texto de la respuesta
-                            content = message_obj.get("content", [])
-                            text_parts = []
+                        # Buscar la ultima respuesta del asistente con texto
+                        found_text = ""
+                        for msg in reversed(messages):
+                            message_obj = msg.get("message", {})
+                            if message_obj.get("role") == "assistant":
+                                content = message_obj.get("content", [])
+                                text_parts = []
 
-                            if isinstance(content, list):
-                                for item in content:
-                                    if isinstance(item, dict) and item.get("type") == "text":
-                                        text_parts.append(item.get("text", ""))
-                                    elif isinstance(item, str):
-                                        text_parts.append(item)
-                            elif isinstance(content, str):
-                                text_parts.append(content)
+                                if isinstance(content, list):
+                                    for item in content:
+                                        if isinstance(item, dict) and item.get("type") == "text":
+                                            text_parts.append(item.get("text", ""))
+                                        elif isinstance(item, str):
+                                            text_parts.append(item)
+                                elif isinstance(content, str):
+                                    text_parts.append(content)
 
-                            assistant_response = "\n".join(text_parts).strip()
-                            if assistant_response:
-                                break
-                except Exception as e:
-                    assistant_response = f"(Error al leer transcript: {e})"
+                                candidate = "\n".join(text_parts).strip()
+                                if candidate:
+                                    found_text = candidate
+                                    break
+
+                        if found_text:
+                            assistant_response = found_text
+                            if attempt > 0:
+                                with open(debug_file, "a", encoding="utf-8") as df:
+                                    df.write(f"retry_success: attempt={attempt+1}\n")
+                            break
+                        else:
+                            attempt += 1
+                            if attempt < max_retries:
+                                time.sleep(retry_delay)
+                    except Exception as e:
+                        assistant_response = f"(Error al leer transcript: {e})"
+                        break
+
+                if attempt == max_retries and assistant_response == "(Respuesta no disponible)":
+                    with open(debug_file, "a", encoding="utf-8") as df:
+                        df.write(f"retry_exhausted: {max_retries} intentos sin texto\n")
 
             temp_data["completed"] = True
             temp_data["response_summary"] = assistant_response
